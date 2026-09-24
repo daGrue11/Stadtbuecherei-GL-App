@@ -26,17 +26,27 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.Euro
+import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.Headphones
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
 import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.Newspaper
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PersonRemove
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.SportsEsports
+import androidx.compose.material.icons.outlined.Toys
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -68,6 +78,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,6 +112,7 @@ fun AccountScreen(
     var renaming by remember { mutableStateOf(false) }
     var removing by remember { mutableStateOf(false) }
     var logoutAll by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
     val active = state.activeProfile
 
     LaunchedEffect(state.message) {
@@ -183,6 +195,10 @@ fun AccountScreen(
         )
     }
 
+    if (showAbout) {
+        AboutDialog(onDismiss = { showAbout = false })
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
@@ -234,6 +250,11 @@ fun AccountScreen(
                                 )
                             }
                             HorizontalDivider()
+                            DropdownMenuItem(
+                                text = { Text("Über die App") },
+                                leadingIcon = { Icon(Icons.Outlined.Info, null) },
+                                onClick = { menuOpen = false; showAbout = true },
+                            )
                             DropdownMenuItem(
                                 text = { Text("Alle Konten abmelden") },
                                 leadingIcon = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
@@ -616,6 +637,10 @@ private fun LoanCard(loan: Loan, today: LocalDate, busy: Boolean, onRenew: () ->
                 )
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
+                    if (loan.mediaType.isNotBlank()) {
+                        MediaTypeLabel(loan.mediaType)
+                        Spacer(Modifier.height(2.dp))
+                    }
                     Text(
                         loan.title,
                         style = MaterialTheme.typography.titleSmall,
@@ -643,6 +668,48 @@ private fun LoanCard(loan: Loan, today: LocalDate, busy: Boolean, onRenew: () ->
             Spacer(Modifier.height(8.dp))
             RenewRow(loan, busy, onRenew)
         }
+    }
+}
+
+/** Medienart wie von der Bibliothek geliefert ("Buch", "Tonie", "Spiel" ...), mit passendem Symbol. */
+@Composable
+private fun MediaTypeLabel(mediaType: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            mediaTypeIcon(mediaType),
+            contentDescription = null,
+            modifier = Modifier.size(14.dp),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            mediaType,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/**
+ * Die Bibliothek liefert die Medienart als Freitext. Reihenfolge beachten:
+ * "Hörbuch" und "Bilderbuch" enthalten "buch", "Konsolenspiel" enthaelt "spiel".
+ */
+private fun mediaTypeIcon(mediaType: String): ImageVector {
+    val t = mediaType.lowercase()
+    return when {
+        "hörbuch" in t || "hoerbuch" in t -> Icons.Outlined.Headphones
+        "tonie" in t -> Icons.Outlined.Toys
+        "bilderbuch" in t -> Icons.Outlined.AutoStories
+        "konsole" in t || "videospiel" in t || "switch" in t || "playstation" in t ->
+            Icons.Outlined.SportsEsports
+        "spiel" in t -> Icons.Outlined.Extension
+        "dvd" in t || "blu-ray" in t || "film" in t -> Icons.Outlined.Movie
+        "cd" in t || "musik" in t -> Icons.Outlined.Album
+        "zeitschrift" in t || "zeitung" in t -> Icons.Outlined.Newspaper
+        "buch" in t || "roman" in t -> Icons.Outlined.MenuBook
+        else -> Icons.Outlined.Category
     }
 }
 

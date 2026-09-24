@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BibGL"
+rootProject.name = "Stadtbuecherei-GL-App"
 include(":app")

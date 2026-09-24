@@ -1,4 +1,4 @@
-# Bib-GL-App
+# Stadtbücherei-GL-App
 
 **Inoffizielle Android-App für die Stadtbücherei Bergisch Gladbach**
 
@@ -20,7 +20,7 @@ Frist abläuft.
 
 | Funktion | Details |
 |---|---|
-| **Ausgeliehene Medien** | Titel, Verfasser, Mediengruppe, Zweigstelle, Cover. Antippen öffnet die Detailseite im Browser |
+| **Ausgeliehene Medien** | Titel, Verfasser, Medienart (Buch, Bilderbuch, Tonie, Spiel …), Zweigstelle, Cover. Antippen öffnet die Detailseite im Browser |
 | **Countdown** | Farbige Ampel bis zur Rückgabe: rot überfällig, orange ≤ 2 Tage, gelb ≤ 7 Tage, grün ab 8 Tagen |
 | **Verlängern** | Einzeln oder alle verlängerbaren Medien auf einmal. Nicht verlängerbare Medien zeigen den Grund („Die maximale Anzahl der Verlängerungen ist erreicht.") |
 | **Gebühren** | Offene Gebühren, Einzahlungen, Saldo, Einzelposten |
@@ -35,8 +35,8 @@ unterwegs sichtbar bleiben.
 
 ## Installation
 
-1. **[APK herunterladen](https://github.com/daGrue11/Bib-GL-App/releases/latest)** — unter *Assets* die Datei
-   `Bib-GL-App-*.apk` antippen
+1. **[APK herunterladen](https://github.com/daGrue11/Stadtbuecherei-GL-App/releases/latest)** — unter *Assets* die Datei
+   `Stadtbuecherei-GL-App-*.apk` antippen
 2. Die Datei auf dem Android-Gerät öffnen
 3. Android fragt, ob Apps aus dieser Quelle installiert werden dürfen → erlauben
 4. Installieren, App öffnen, Ausweisnummer und Passwort der Stadtbücherei eingeben

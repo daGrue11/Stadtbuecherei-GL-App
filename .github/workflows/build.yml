@@ -63,7 +63,7 @@ jobs:
         run: gradle assembleRelease --no-daemon --stacktrace
 
       # Bei einem Tag zaehlt dessen Name, sonst die versionName aus dem Build -
-      # sonst hiesse die Datei bei einem normalen Push "Bib-GL-App-main.apk".
+      # sonst hiesse die Datei bei einem normalen Push "Stadtbuecherei-GL-App-main.apk".
       - name: APK benennen
         id: apk
         run: |
@@ -72,7 +72,7 @@ jobs:
           else
             VERSION="$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts)-dev"
           fi
-          NAME="Bib-GL-App-${VERSION}.apk"
+          NAME="Stadtbuecherei-GL-App-${VERSION}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$NAME"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "APK: $NAME"
@@ -80,7 +80,7 @@ jobs:
       - name: APK als Artefakt hochladen
         uses: actions/upload-artifact@v5
         with:
-          name: Bib-GL-App
+          name: Stadtbuecherei-GL-App
           path: ${{ steps.apk.outputs.name }}
           if-no-files-found: error
 
@@ -92,6 +92,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" "${{ steps.apk.outputs.name }}" \
-            --title "Bib-GL-App $GITHUB_REF_NAME" \
+            --title "Stadtbücherei-GL-App $GITHUB_REF_NAME" \
             --notes "Installationsanleitung und Hinweise siehe README im Repository." \
             --latest

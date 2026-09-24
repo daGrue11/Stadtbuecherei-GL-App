@@ -1,6 +1,6 @@
 # Technische Details
 
-Hintergrund zur [Bib-GL-App](../README.md): wie man sie selbst baut und wie
+Hintergrund zur [Stadtbücherei-GL-App](../README.md): wie man sie selbst baut und wie
 das Auslesen der Bibliotheksseite funktioniert.
 
 ---
@@ -10,8 +10,8 @@ das Auslesen der Bibliotheksseite funktioniert.
 Es wird kein Android Studio gebraucht — GitHub baut den APK:
 
 ```bash
-git clone https://github.com/daGrue11/Bib-GL-App.git
-cd Bib-GL-App
+git clone https://github.com/daGrue11/Stadtbuecherei-GL-App.git
+cd Stadtbuecherei-GL-App
 ```
 
 Im eigenen Fork unter **Actions** den Workflow *Android APK bauen* starten und
@@ -25,7 +25,7 @@ Mit Android Studio: Projektordner öffnen, Gradle synchronisieren, `Run`.
 
 Die Stadtbücherei nutzt **OCLC OPEN** auf DotNetNuke (ASP.NET WebForms). Eine
 offizielle Schnittstelle gibt es nicht, die App liest die Website aus. Das
-Wesentliche steckt in [`LibraryClient.kt`](https://github.com/daGrue11/Bib-GL-App/blob/main/app/src/main/java/de/bibgl/konto/data/LibraryClient.kt):
+Wesentliche steckt in [`LibraryClient.kt`](https://github.com/daGrue11/Stadtbuecherei-GL-App/blob/main/app/src/main/java/de/bibgl/konto/data/LibraryClient.kt):
 
 - **Login** ist ein WebForms-Postback auf `/Login` mit `__VIEWSTATE` und
   `__EVENTVALIDATION` aus dem Formular.
@@ -86,8 +86,8 @@ Der APK läuft, kann aber keine offizielle Version aus den Releases überschreib
 3. Passenden Tag setzen:
 
 ```bash
-git tag v1.5
-git push origin v1.5
+git tag v1.6
+git push origin v1.6
 ```
 
 Der Tag-Push baut den APK und legt den GitHub-Release samt Datei an. Ein
