@@ -214,7 +214,6 @@ fun AccountScreen(
                             state = state,
                             onDismiss = { switcherOpen = false },
                             onSwitch = { id -> switcherOpen = false; onSwitchProfile(id) },
-                            onAdd = { switcherOpen = false; onAddProfile() },
                         )
                     }
                 },
@@ -421,7 +420,6 @@ private fun ProfileSwitcherMenu(
     state: UiState,
     onDismiss: () -> Unit,
     onSwitch: (String) -> Unit,
-    onAdd: () -> Unit,
 ) {
     val today = LocalDate.now()
     val dark = MaterialTheme.colorScheme.surface.luminanceIsDark()
@@ -452,12 +450,6 @@ private fun ProfileSwitcherMenu(
                 onClick = { onSwitch(profile.id) },
             )
         }
-        HorizontalDivider()
-        DropdownMenuItem(
-            text = { Text("Konto hinzufügen") },
-            leadingIcon = { Icon(Icons.Outlined.PersonAdd, null) },
-            onClick = onAdd,
-        )
     }
 }
 
