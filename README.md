@@ -72,5 +72,7 @@ manche Dinge so gelöst sind, steht in **[docs/TECHNIK.md](docs/TECHNIK.md)**.
 
 ## Lizenz
 
-[MIT](LICENSE) — Nutzung, Änderung und Weitergabe sind erlaubt, solange der
-Copyright-Hinweis erhalten bleibt. Ohne Gewährleistung.
+[PolyForm Noncommercial 1.0.0](LICENSE) — Nutzung, Änderung und Weitergabe
+sind für nicht-kommerzielle Zwecke erlaubt, solange der Lizenztext bzw. dessen
+URL und der Copyright-Hinweis erhalten bleiben. Kommerzielle Nutzung ist nicht
+gestattet. Ohne Gewährleistung.
