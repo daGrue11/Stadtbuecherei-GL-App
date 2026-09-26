@@ -47,7 +47,7 @@ Wesentliche steckt in [`LibraryClient.kt`](https://github.com/daGrue11/Stadtbuec
 - **Erfolg einer Verlängerung** wird daran gemessen, ob sich die Frist
   tatsächlich verschoben hat, nicht an den Meldungstexten der Seite.
 - **Merkliste** zeigt die Seite in Seiten zu je 10 Einträgen. Die App lädt das
-  Konto mit `pagesize=25` und liest die Gesamtzahl aus dem Reiter; stehen mehr
+  Konto mit `pagesize=20` (eine der Größen, die die Seite selbst anbietet) und liest die Gesamtzahl aus dem Reiter; stehen mehr
   Titel auf der Merkliste, weist sie darauf hin. Entfernen ist ein Postback
   des Links „von der Merkliste entfernen", danach wird neu geladen und geprüft,
   ob der Titel wirklich weg ist.

@@ -42,7 +42,7 @@ class LibraryClient {
         const val ACCOUNT_URL = "$BASE/Mein-Konto"
 
         /** So viele Merklisten-Eintraege liefert eine Seite; ohne Angabe sind es nur 10. */
-        const val WATCHLIST_PAGE_SIZE = 25
+        const val WATCHLIST_PAGE_SIZE = 20
         private const val ACCOUNT_PAGE_URL = "$ACCOUNT_URL?page=1&pagesize=$WATCHLIST_PAGE_SIZE"
 
         private const val EXTENDABLE_URL = BASE +
