@@ -38,6 +38,7 @@ class Store(private val context: Context) {
         private fun kLabel(id: String) = "profile_label_$id"
         private fun kAccount(id: String) = "account_cache_$id"
         private fun kNotified(id: String) = "last_notified_$id"
+        private fun kCardNotified(id: String) = "last_card_notified_$id"
         private fun kUser(id: String) = "user_$id"
         private fun kPass(id: String) = "pass_$id"
 
@@ -169,6 +170,7 @@ class Store(private val context: Context) {
             .remove(kLabel(id))
             .remove(kAccount(id))
             .remove(kNotified(id))
+            .remove(kCardNotified(id))
             .apply()
         val remaining = profileIds - id
         profileIds = remaining
@@ -209,6 +211,13 @@ class Store(private val context: Context) {
 
     fun setLastNotifiedDay(id: String, day: Long) {
         plain.edit().putLong(kNotified(id), day).apply()
+    }
+
+    /** Tag der letzten Warnung zum Ausweisablauf je Profil (epochDay), fuer den Wochenrhythmus. */
+    fun lastCardNotifiedDay(id: String): Long = plain.getLong(kCardNotified(id), 0L)
+
+    fun setLastCardNotifiedDay(id: String, day: Long) {
+        plain.edit().putLong(kCardNotified(id), day).apply()
     }
 
     // ------------------------------------------------------------------ Cache

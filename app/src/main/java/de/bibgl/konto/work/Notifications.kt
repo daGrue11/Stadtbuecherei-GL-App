@@ -111,15 +111,18 @@ object Notifications {
         return true
     }
 
-    /** Warnt, wenn ein Bibliotheksausweis in den naechsten 30 Tagen ablaeuft. */
+    /**
+     * Warnt, wenn ein Bibliotheksausweis in den naechsten 30 Tagen ablaeuft.
+     * Liefert true, wenn gewarnt wurde - der Worker merkt sich dann den Tag.
+     */
     fun notifyCardExpiry(
         context: Context,
         profile: Profile,
         account: Account,
         showProfile: Boolean,
-    ) {
-        val days = account.cardDaysLeft() ?: return
-        if (days > 30 || !canNotify(context)) return
+    ): Boolean {
+        val days = account.cardDaysLeft() ?: return false
+        if (days > 30 || !canNotify(context)) return false
         val who = if (showProfile) "Der Ausweis von ${profile.label}" else "Dein Bibliotheksausweis"
         val text = if (days < 0) {
             "$who ist seit ${-days} ${dayWord(-days)} abgelaufen."
@@ -137,6 +140,7 @@ object Notifications {
             .build()
         NotificationManagerCompat.from(context)
             .notify(notificationId(BASE_CARD, profile.id), notification)
+        return true
     }
 
     private fun dueLabel(loan: Loan, today: LocalDate): String {

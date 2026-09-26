@@ -53,8 +53,15 @@ class DueDateWorker(
                 val notified = Notifications.notifyDueSoon(
                     applicationContext, profile, account, store.reminderDays, showProfile,
                 )
-                Notifications.notifyCardExpiry(applicationContext, profile, account, showProfile)
                 if (notified) store.setLastNotifiedDay(profile.id, today)
+            }
+
+            // Ausweisablauf nur einmal pro Woche melden - taeglich waere zu aufdringlich.
+            if (today - store.lastCardNotifiedDay(profile.id) >= CARD_REMINDER_INTERVAL_DAYS) {
+                val notified = Notifications.notifyCardExpiry(
+                    applicationContext, profile, account, showProfile,
+                )
+                if (notified) store.setLastCardNotifiedDay(profile.id, today)
             }
         }
 
@@ -63,6 +70,7 @@ class DueDateWorker(
 
     companion object {
         private const val WORK_NAME = "due_date_check"
+        private const val CARD_REMINDER_INTERVAL_DAYS = 7
 
         /** Plant den taeglichen Check auf ca. 9 Uhr morgens. */
         fun schedule(context: Context) {
