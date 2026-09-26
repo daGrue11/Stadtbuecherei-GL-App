@@ -114,8 +114,8 @@ Der APK läuft, kann aber keine offizielle Version aus den Releases überschreib
 3. Passenden Tag setzen:
 
 ```bash
-git tag v1.6
-git push origin v1.6
+git tag v1.8
+git push origin v1.8
 ```
 
 Der Tag-Push baut den APK und legt den GitHub-Release samt Datei an. Ein
