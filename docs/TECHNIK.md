@@ -47,12 +47,15 @@ Wesentliche steckt in [`LibraryClient.kt`](https://github.com/daGrue11/Stadtbuec
 - **Erfolg einer Verlängerung** wird daran gemessen, ob sich die Frist
   tatsächlich verschoben hat, nicht an den Meldungstexten der Seite.
 - **Merkliste** zeigt die Seite in Seiten zu je 10 Einträgen. Die App lädt das
-  Konto mit `pagesize=20` (eine der Größen, die die Seite selbst anbietet) und liest die Gesamtzahl aus dem Reiter; stehen mehr
-  Titel auf der Merkliste, weist sie darauf hin. Entfernen ist ein Postback
-  des Links „von der Merkliste entfernen", danach wird neu geladen und geprüft,
-  ob der Titel wirklich weg ist.
+  Konto mit `pagesize=20` (eine der Größen, die die Seite selbst anbietet) und
+  liest die Gesamtzahl aus dem Reiter; stehen mehr Titel auf der Merkliste,
+  weist sie darauf hin. Entfernen ist ein Postback des Links „von der Merkliste
+  entfernen", danach wird neu geladen und geprüft, ob der Titel wirklich weg ist.
 - **Mehrere Konten** bekommen je einen eigenen HTTP-Client mit eigenem
   Cookie-Jar; die Seite kennt nur eine Anmeldung pro Sitzung.
+- **Sitzungen** wirft die Seite nach kurzer Zeit weg. Schlägt ein Abruf oder
+  eine Aktion fehl, meldet sich die App genau einmal neu an und versucht es
+  erneut, bevor sie einen Fehler zeigt.
 
 Weil die App eine Website ausliest, kann ein Umbau durch die Bibliothek die
 Anzeige stören. Die Selektoren sind bewusst so gewählt, dass sie Änderungen an

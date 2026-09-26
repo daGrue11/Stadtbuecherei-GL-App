@@ -25,7 +25,7 @@ Frist abläuft.
 | **Verlängern** | Einzeln oder alle verlängerbaren Medien auf einmal. Nicht verlängerbare Medien zeigen den Grund („Die maximale Anzahl der Verlängerungen ist erreicht.") |
 | **Gebühren** | Offene Gebühren, Einzahlungen, Saldo, Einzelposten |
 | **Vormerkungen** | Vorbestellte Medien und was gerade abholbereit ist |
-| **Merkliste** | Gemerkte Titel, Antippen öffnet die Detailseite, Entfernen per Lesezeichen-Symbol |
+| **Merkliste** | Gemerkte Titel (bis zu 20, bei mehr ein Hinweis mit Link zur Website), Antippen öffnet die Detailseite, Entfernen per Lesezeichen-Symbol |
 | **Ausweis** | Hinweis in der App ab 60 Tagen vor Ablauf, Benachrichtigung ab 30 Tagen (einmal pro Woche) |
 | **Erinnerungen** | Täglicher Hintergrund-Check, Benachrichtigung einstellbar: 1–14 Tage vor Fristende |
 | **Mehrere Ausweise** | Konto-Umschalter in der Titelleiste, jedes Konto mit eigener Vorschau und eigenen Erinnerungen |
