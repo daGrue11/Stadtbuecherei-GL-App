@@ -41,6 +41,10 @@ class LibraryClient {
         const val LOGIN_URL = "$BASE/Login?returnurl=%2f&focusModule=login"
         const val ACCOUNT_URL = "$BASE/Mein-Konto"
 
+        /** So viele Merklisten-Eintraege liefert eine Seite; ohne Angabe sind es nur 10. */
+        const val WATCHLIST_PAGE_SIZE = 25
+        private const val ACCOUNT_PAGE_URL = "$ACCOUNT_URL?page=1&pagesize=$WATCHLIST_PAGE_SIZE"
+
         private const val EXTENDABLE_URL = BASE +
             "/DesktopModules/OCLC.OPEN.PL.DNN.PatronAccountModule/PatronAccountService.asmx/IsCatalogueCopyExtendable"
         private const val RESX =
@@ -137,8 +141,12 @@ class LibraryClient {
 
         val result = postForm(formAction(loginPage), fields, LOGIN_URL)
         if (!isLoggedIn(result)) throw LibraryException(loginError(result))
-        lastDoc = result
-        buildAccount(result)
+        // Die Seite nach dem Login zeigt nur 10 Merklisten-Eintraege - einmal mit
+        // groesserer Seitengroesse nachladen, notfalls mit dem Login-Ergebnis weiter.
+        val doc = runCatching { get(ACCOUNT_PAGE_URL) }.getOrNull()?.takeIf { isLoggedIn(it) }
+            ?: result
+        lastDoc = doc
+        buildAccount(doc)
     }
 
     private fun isLoggedIn(doc: Document): Boolean =
@@ -152,7 +160,7 @@ class LibraryClient {
 
     /** Laedt die Kontoseite neu; die Sitzung muss noch bestehen. */
     suspend fun refresh(): Account = withContext(Dispatchers.IO) {
-        val doc = get(ACCOUNT_URL)
+        val doc = get(ACCOUNT_PAGE_URL)
         if (!isLoggedIn(doc)) throw LibraryException("Sitzung abgelaufen")
         lastDoc = doc
         buildAccount(doc)
@@ -299,6 +307,36 @@ class LibraryClient {
         }
     }
 
+    // -------------------------------------------------------------- Merkliste
+
+    /**
+     * Entfernt einen Eintrag von der Merkliste ueber den Postback seines Links.
+     * Erfolg heisst: der Eintrag ist danach wirklich nicht mehr auf der Liste.
+     */
+    suspend fun removeFromWatchlist(mediaId: String): Account = withContext(Dispatchers.IO) {
+        val doc = lastDoc ?: throw LibraryException("Keine aktive Sitzung")
+        val target = parseWatchlist(doc).firstOrNull { it.mediaId == mediaId }?.removeTarget
+            ?: throw LibraryException("Titel ist nicht mehr auf der Merkliste")
+
+        val fields = hiddenFields(doc)
+        fields["__EVENTTARGET"] = target
+        fields["__EVENTARGUMENT"] = ""
+        val after = postForm(formAction(doc), fields, lastUrl)
+        if (!isLoggedIn(after)) throw LibraryException("Sitzung abgelaufen")
+
+        // Die Antwort auf den Postback kann wieder nur 10 Eintraege zeigen; ein
+        // Eintrag weiter hinten saehe dann faelschlich entfernt aus. Daher neu laden.
+        val reloaded = get(ACCOUNT_PAGE_URL)
+        if (!isLoggedIn(reloaded)) throw LibraryException("Sitzung abgelaufen")
+        lastDoc = reloaded
+
+        val account = buildAccount(reloaded)
+        if (account.watchlist.any { it.mediaId == mediaId }) {
+            throw LibraryException("Entfernen von der Merkliste hat nicht geklappt")
+        }
+        account
+    }
+
     // -------------------------------------------- Verlaengerbarkeit (JSON-API)
 
     /**
@@ -371,6 +409,7 @@ class LibraryClient {
             reservations = parseTable(doc, "table[id\$=grdViewReservations]"),
             readyForPickup = parseTable(doc, "table[id\$=grdViewReadyForPickups]"),
             watchlist = parseWatchlist(doc),
+            watchlistTotal = watchlistTotal(doc),
             fees = parseFees(doc),
             fetchedAt = System.currentTimeMillis(),
         )
@@ -481,8 +520,33 @@ class LibraryClient {
         return out
     }
 
+    /** Gesamtzahl laut Reiter "Merkliste" - auch Eintraege, die nicht auf der Seite stehen. */
+    private fun watchlistTotal(doc: Document): Int? =
+        doc.selectFirst("span[id\$=tpnlWatchList_l] .DnnTabFlag")?.text()?.trim()?.toIntOrNull()
+
+    /**
+     * Jeder Eintrag steckt in einem "..._mdv<Mediennummer>_divMedium" mit Titel-Link,
+     * verstecktem Feld "mednr" und dem Postback-Link "von der Merkliste entfernen".
+     * Gelesen wird nur die erste Seite der Merkliste ([WATCHLIST_PAGE_SIZE] Eintraege).
+     */
     private fun parseWatchlist(doc: Document): List<WatchItem> {
         val panel = doc.selectFirst("div[id\$=tpnlWatchList]") ?: return emptyList()
+        val entries = panel.select("div[id\$=_divMedium]").mapNotNull { entry ->
+            val titleLink = entry.selectFirst("a[id\$=LbtnShortDescriptionValue]")
+                ?: return@mapNotNull null
+            val title = titleLink.text().trim()
+            if (title.isEmpty()) return@mapNotNull null
+            WatchItem(
+                title = title,
+                url = titleLink.absUrl("href").ifEmpty { null },
+                mediaId = entry.selectFirst("input[name\$='\$mednr']")?.attr("value").orEmpty(),
+                removeTarget = entry.selectFirst("a[id\$=LbtnWatchlist]")?.attr("href")
+                    ?.let { POSTBACK_RE.find(it)?.groupValues?.get(1) },
+            )
+        }
+        if (entries.isNotEmpty()) return entries
+
+        // Rueckfall, falls sich der Aufbau aendert: wenigstens Titel und Links zeigen.
         return panel.select("a[href*=Mediensuche]")
             .mapNotNull { a ->
                 val t = a.text().trim()

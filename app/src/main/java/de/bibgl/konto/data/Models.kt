@@ -76,7 +76,14 @@ data class Fees(
 }
 
 @Serializable
-data class WatchItem(val title: String, val url: String? = null)
+data class WatchItem(
+    val title: String,
+    val url: String? = null,
+    /** Mediennummer des Katalogs, z.B. "9222468" - eindeutig, anders als der Titel. */
+    val mediaId: String = "",
+    /** WebForms-Postback-Ziel des Links "von der Merkliste entfernen". */
+    val removeTarget: String? = null,
+)
 
 /**
  * Ein hinterlegter Bibliotheksausweis (eigener, Kinder, Partner...).
@@ -100,6 +107,8 @@ data class Account(
     val reservations: Table = Table(),
     val readyForPickup: Table = Table(),
     val watchlist: List<WatchItem> = emptyList(),
+    /** Gesamtzahl der Merkliste; kann groesser sein als [watchlist]. Null = unbekannt. */
+    val watchlistTotal: Int? = null,
     val fees: Fees = Fees(),
     /** Zeitpunkt des Abrufs, Millis seit Epoch. */
     val fetchedAt: Long = 0L,

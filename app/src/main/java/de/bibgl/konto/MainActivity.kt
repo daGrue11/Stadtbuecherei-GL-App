@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
                         onRefresh = viewModel::refresh,
                         onRenew = { copyId -> viewModel.renew(copyId) },
                         onRenewAll = { viewModel.renewAll() },
+                        onRemoveFromWatchlist = viewModel::removeFromWatchlist,
                         onOpenSettings = { settingsOpen = true },
                         onLogoutAll = viewModel::logoutAll,
                         onMessageShown = viewModel::consumeMessage,

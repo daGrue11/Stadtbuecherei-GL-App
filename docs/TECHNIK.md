@@ -46,6 +46,11 @@ Wesentliche steckt in [`LibraryClient.kt`](https://github.com/daGrue11/Stadtbuec
   denselben ID-Endungen enthält.
 - **Erfolg einer Verlängerung** wird daran gemessen, ob sich die Frist
   tatsächlich verschoben hat, nicht an den Meldungstexten der Seite.
+- **Merkliste** zeigt die Seite in Seiten zu je 10 Einträgen. Die App lädt das
+  Konto mit `pagesize=25` und liest die Gesamtzahl aus dem Reiter; stehen mehr
+  Titel auf der Merkliste, weist sie darauf hin. Entfernen ist ein Postback
+  des Links „von der Merkliste entfernen", danach wird neu geladen und geprüft,
+  ob der Titel wirklich weg ist.
 - **Mehrere Konten** bekommen je einen eigenen HTTP-Client mit eigenem
   Cookie-Jar; die Seite kennt nur eine Anmeldung pro Sitzung.
 

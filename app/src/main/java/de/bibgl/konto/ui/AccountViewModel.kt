@@ -8,6 +8,7 @@ import de.bibgl.konto.data.AccountRepository
 import de.bibgl.konto.data.LibraryException
 import de.bibgl.konto.data.Profile
 import de.bibgl.konto.data.Store
+import de.bibgl.konto.data.WatchItem
 import de.bibgl.konto.work.DueDateWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,8 @@ data class UiState(
     val loading: Boolean = false,
     /** Medien, die gerade verlaengert werden - fuer den Spinner am Button. */
     val renewing: Set<String> = emptySet(),
+    /** Merklisten-Eintraege (Mediennummern), die gerade entfernt werden. */
+    val removingWatch: Set<String> = emptySet(),
     val account: Account? = null,
     val error: String? = null,
     /** Einmalige Rueckmeldung, z.B. "Verlängert bis 12.11.2026". */
@@ -115,6 +118,7 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
                 error = null,
                 message = null,
                 renewing = emptySet(),
+                removingWatch = emptySet(),
                 feeConfirmation = null,
             )
         }
@@ -144,6 +148,7 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
                 error = null,
                 message = null,
                 renewing = emptySet(),
+                removingWatch = emptySet(),
                 feeConfirmation = null,
             )
         }
@@ -232,6 +237,35 @@ class AccountViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 .onFailure { e ->
                     _state.update { it.copy(renewing = it.renewing - idSet, error = describe(e)) }
+                }
+        }
+    }
+
+    // -------------------------------------------------------------- Merkliste
+
+    fun removeFromWatchlist(item: WatchItem) {
+        val profileId = _state.value.activeProfileId ?: return
+        val mediaId = item.mediaId
+        if (mediaId.isEmpty() || mediaId in _state.value.removingWatch) return
+        _state.update { it.copy(removingWatch = it.removingWatch + mediaId, error = null) }
+        viewModelScope.launch {
+            runCatching { repo.removeFromWatchlist(profileId, mediaId) }
+                .onSuccess { account ->
+                    _state.update {
+                        if (it.activeProfileId != profileId) {
+                            it.copy(removingWatch = it.removingWatch - mediaId)
+                        } else it.copy(
+                            removingWatch = it.removingWatch - mediaId,
+                            account = account,
+                            previews = it.previews + (profileId to account),
+                            message = "\"${item.title}\" von der Merkliste entfernt",
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _state.update {
+                        it.copy(removingWatch = it.removingWatch - mediaId, error = describe(e))
+                    }
                 }
         }
     }

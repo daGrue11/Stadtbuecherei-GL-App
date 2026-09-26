@@ -67,6 +67,13 @@ class AccountRepository(private val store: Store) {
         result
     }
 
+    suspend fun removeFromWatchlist(profileId: String, mediaId: String): Account =
+        lock.withLock {
+            val account = withSession(profileId) { it.removeFromWatchlist(mediaId) }
+            store.setCachedAccount(profileId, account)
+            account
+        }
+
     /** Entfernt ein Profil samt seiner Sitzung und Zwischenspeicher. */
     fun remove(profileId: String) {
         clients.remove(profileId)

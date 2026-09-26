@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Album
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.outlined.BookmarkRemove
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CreditCard
@@ -85,8 +86,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import de.bibgl.konto.data.Account
+import de.bibgl.konto.data.LibraryClient
 import de.bibgl.konto.data.Loan
 import de.bibgl.konto.data.Table
+import de.bibgl.konto.data.WatchItem
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,6 +99,7 @@ fun AccountScreen(
     onRefresh: () -> Unit,
     onRenew: (String) -> Unit,
     onRenewAll: () -> Unit,
+    onRemoveFromWatchlist: (WatchItem) -> Unit,
     onOpenSettings: () -> Unit,
     onLogoutAll: () -> Unit,
     onMessageShown: () -> Unit,
@@ -284,6 +288,7 @@ fun AccountScreen(
                     state = state,
                     onRenew = onRenew,
                     onRenewAll = onRenewAll,
+                    onRemoveFromWatchlist = onRemoveFromWatchlist,
                 )
             }
         }
@@ -296,6 +301,7 @@ private fun AccountContent(
     state: UiState,
     onRenew: (String) -> Unit,
     onRenewAll: () -> Unit,
+    onRemoveFromWatchlist: (WatchItem) -> Unit,
 ) {
     val today = LocalDate.now()
     val loans = account.loansByDueDate
@@ -377,7 +383,14 @@ private fun AccountContent(
         item { FeesCard(account) }
 
         if (account.watchlist.isNotEmpty()) {
-            item { WatchlistCard(account.watchlist.map { it.title to it.url }) }
+            item {
+                WatchlistCard(
+                    items = account.watchlist,
+                    total = account.watchlistTotal,
+                    removing = state.removingWatch,
+                    onRemove = onRemoveFromWatchlist,
+                )
+            }
         }
 
         item { FooterNote(account) }
@@ -875,9 +888,31 @@ private fun TableCard(table: Table) {
 }
 
 @Composable
-private fun WatchlistCard(items: List<Pair<String, String?>>) {
+private fun WatchlistCard(
+    items: List<WatchItem>,
+    total: Int?,
+    removing: Set<String>,
+    onRemove: (WatchItem) -> Unit,
+) {
+    // Die App liest nur die erste Seite der Merkliste; der Reiter nennt die Gesamtzahl.
+    val count = maxOf(total ?: 0, items.size)
+    val truncated = count > items.size
     var expanded by rememberSaveable { mutableStateOf(false) }
+    var confirm by remember { mutableStateOf<WatchItem?>(null) }
     val uriHandler = LocalUriHandler.current
+
+    // Auf der Website laesst sich das nicht rueckgaengig machen - also nachfragen.
+    confirm?.let { item ->
+        AlertDialog(
+            onDismissRequest = { confirm = null },
+            title = { Text("Von der Merkliste entfernen") },
+            text = { Text("\"${item.title}\" von der Merkliste entfernen?") },
+            confirmButton = {
+                TextButton(onClick = { confirm = null; onRemove(item) }) { Text("Entfernen") }
+            },
+            dismissButton = { TextButton(onClick = { confirm = null }) { Text("Abbrechen") } },
+        )
+    }
 
     Card(Modifier.fillMaxWidth()) {
         Column {
@@ -893,7 +928,7 @@ private fun WatchlistCard(items: List<Pair<String, String?>>) {
                 Text("Merkliste", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    items.size.toString(),
+                    count.toString(),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -904,20 +939,54 @@ private fun WatchlistCard(items: List<Pair<String, String?>>) {
                 )
             }
             AnimatedVisibility(expanded) {
-                Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                    items.forEach { (title, url) ->
-                        Text(
-                            title,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .then(
-                                    if (url != null) Modifier.clickable { uriHandler.openUri(url) }
-                                    else Modifier
-                                )
-                                .padding(vertical = 6.dp),
-                        )
+                Column(Modifier.padding(start = 16.dp, end = 4.dp, bottom = 8.dp)) {
+                    items.forEach { item ->
+                        val url = item.url
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                item.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .then(
+                                        if (url != null) Modifier.clickable { uriHandler.openUri(url) }
+                                        else Modifier
+                                    )
+                                    .padding(vertical = 6.dp),
+                            )
+                            if (item.mediaId in removing) {
+                                Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                                }
+                            } else if (item.removeTarget != null && item.mediaId.isNotEmpty()) {
+                                IconButton(onClick = { confirm = item }) {
+                                    Icon(
+                                        Icons.Outlined.BookmarkRemove,
+                                        contentDescription = "${item.title} von der Merkliste entfernen",
+                                    )
+                                }
+                            }
+                        }
                     }
+                    Text(
+                        if (truncated) {
+                            "Die App zeigt die ersten ${items.size} von $count Einträgen. " +
+                                "Alle Einträge siehst du auf der Website."
+                        } else {
+                            "Die App zeigt bis zu ${LibraryClient.WATCHLIST_PAGE_SIZE} Einträge der Merkliste."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (truncated) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .then(
+                                if (truncated) {
+                                    Modifier.clickable { uriHandler.openUri(LibraryClient.ACCOUNT_URL) }
+                                } else Modifier
+                            )
+                            .padding(top = 8.dp, bottom = 8.dp),
+                    )
                 }
             }
         }
