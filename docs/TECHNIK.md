@@ -53,6 +53,26 @@ Weil die App eine Website ausliest, kann ein Umbau durch die Bibliothek die
 Anzeige stören. Die Selektoren sind bewusst so gewählt, dass sie Änderungen an
 Layout und Modulnummern überstehen — aber eine Garantie ist das nicht.
 
+## Benachrichtigungen
+
+Ein WorkManager-Job ([`DueDateWorker.kt`](https://github.com/daGrue11/Stadtbuecherei-GL-App/blob/main/app/src/main/java/de/bibgl/konto/work/DueDateWorker.kt))
+lädt einmal täglich gegen 9 Uhr — nur mit Netz — jedes hinterlegte Konto und
+prüft zwei Dinge. Die Regeln selbst stehen in
+[`Notifications.kt`](https://github.com/daGrue11/Stadtbuecherei-GL-App/blob/main/app/src/main/java/de/bibgl/konto/work/Notifications.kt):
+
+- **Rückgabe-Erinnerung:** Medien, die innerhalb der eingestellten Tage
+  (1–14, Standard 5) fällig oder schon überfällig sind. Höchstens eine Meldung
+  pro Konto und Tag.
+- **Ausweisablauf:** ab 30 Tagen vor Ablauf, auch nach Ablauf. Höchstens eine
+  Meldung pro Konto und Woche. Der rote Hinweis in der App erscheint schon ab
+  60 Tagen.
+
+Jedes Konto hat eigene Meldungen, die sich nicht gegenseitig überschreiben; bei
+mehreren Konten steht der Kontoname im Titel. Antippen öffnet die App direkt beim
+betroffenen Konto. Scheitert das Laden eines Kontos, versucht WorkManager es
+später erneut — die übrigen Konten werden trotzdem geprüft. Abschalten lässt sich
+alles in den Einstellungen der App oder im System.
+
 ## Technik
 
 Kotlin · Jetpack Compose (Material 3) · OkHttp · Jsoup · WorkManager ·
